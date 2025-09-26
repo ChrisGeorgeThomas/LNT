@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- Header -->
+  <header class="p-4 bg-gray-800 shadow-lg flex justify-between items-center">
+    <h1 class="text-2xl font-bold">🎬 Movie Explorer</h1>
+    <input id="searchInput" type="text" placeholder="Search movies..." 
+           class="px-3 py-2 rounded text-black w-64">
+  </header>
+
+  <!-- Movie Grid -->
+  <main class="p-6">
+    <div id="movieGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+  </main>
+
+  <!-- Movie Modal -->
+  <div id="movieModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden">
+    <div class="bg-white text-black p-6 rounded-lg w-96 relative">
+      <button id="closeModal" class="absolute top-2 right-2 text-xl font-bold">✖</button>
+      <img id="modalPoster" src="" alt="Movie Poster" class="w-full h-72 object-cover rounded">
+      <h2 id="modalTitle" class="text-2xl font-bold mt-4"></h2>
+      <p id="modalDescription" class="mt-2"></p>
+      
+      <!-- Reviews Section -->
+      <div class="mt-4">
+        <h3 class="font-semibold">Reviews:</h3>
+        <ul id="reviewList" class="list-disc ml-5 text-sm"></ul>
+        <textarea id="reviewInput" placeholder="Write a review..." 
+                  class="w-full border mt-2 p-2 rounded"></textarea>
+        <button id="addReviewBtn" class="bg-blue-600 text-white px-3 py-1 rounded mt-2">Add Review</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    const movies = [
+      { 
+        title: "Inception", 
+        poster: "https://image.tmdb.org/t/p/w500/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg",
+        description: "A thief who enters the dreams of others to steal secrets from their subconscious is offered a job that could give him his life back."
+      },
+      { 
+        title: "The Matrix", 
+        poster: "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
+        description: "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers."
+      },
+      { 
+        title: "Interstellar", 
+        poster: "https://image.tmdb.org/t/p/w500/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg",
+        description: "A team of explorers travels through a wormhole in space in an attempt to ensure humanity's survival."
+      },
+     {
+
+                title: "Bloodshot", 
+                poster: "https://image.tmdb.org/t/p/w500/8WUVHemHFH2ZIP6NWkwlHWsyrEL.jpg",
+                description: "Ray Garrison, an elite soldier killed in battle, is resurrected and given superhuman abilities. As he sets out to get revenge, he uncovers secrets about his life and the people supposedly helping him.."
+},
+      {
+        title: "Dune",
+        poster: "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
+        description: "A noble family becomes embroiled in a war for control over the galaxy's most valuable asset while its heir becomes tormented by prophetic visions."
+      },
+    
+    ];
+
+    const reviews = {}; // store reviews per movie
+    const movieGrid = document.getElementById("movieGrid");
+    const searchInput = document.getElementById("searchInput");
+
+    // Modal elements
+    const movieModal = document.getElementById("movieModal");
+    const modalPoster = document.getElementById("modalPoster");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalDescription = document.getElementById("modalDescription");
+    const closeModal = document.getElementById("closeModal");
+    const reviewList = document.getElementById("reviewList");
+    const reviewInput = document.getElementById("reviewInput");
+    const addReviewBtn = document.getElementById("addReviewBtn");
+
+    let currentMovie = null;
+
+    function renderMovies(list) {
+      movieGrid.innerHTML = "";
+      list.forEach(movie => {
+        const card = document.createElement("div");
+        card.className = "bg-gray-800 rounded-lg shadow-lg overflow-hidden cursor-pointer hover:scale-105 transform transition";
+        card.innerHTML = `
+          <img src="${movie.poster}" alt="${movie.title} poster" 
+               class="w-full h-80 object-cover bg-gray-200"
+               onerror="this.onerror=null;this.src='https://placehold.co/400x600?text=No+Poster';">
+          <div class="p-4">
+            <h3 class="text-lg font-bold">${movie.title}</h3>
+          </div>
+        `;
+        card.addEventListener("click", () => openModal(movie));
+        movieGrid.appendChild(card);
+      });
+    }
+
+    function openModal(movie) {
+      currentMovie = movie;
+      modalPoster.src = movie.poster;
+      modalTitle.textContent = movie.title;
+      modalDescription.textContent = movie.description;
+      
+      // Load reviews
+      reviewList.innerHTML = "";
+      (reviews[movie.title] || []).forEach(r => {
+        const li = document.createElement("li");
+        li.textContent = r;
+        reviewList.appendChild(li);
+      });
+
+      movieModal.classList.remove("hidden");
+    }
+
+    closeModal.addEventListener("click", () => {
+      movieModal.classList.add("hidden");
+      reviewInput.value = "";
+    });
+
+    addReviewBtn.addEventListener("click", () => {
+      const review = reviewInput.value.trim();
+      if (review && currentMovie) {
+        if (!reviews[currentMovie.title]) {
+          reviews[currentMovie.title] = [];
+        }
+        reviews[currentMovie.title].push(review);
+        reviewInput.value = "";
+        openModal(currentMovie); // refresh reviews
+      }
+    });
+
+    searchInput.addEventListener("input", () => {
+      const term = searchInput.value.toLowerCase();
+      const filtered = movies.filter(m => m.title.toLowerCase().includes(term));
+      renderMovies(filtered);
+    });
+
+    // Initial render
+    renderMovies(movies);
+  </script>
+</body>
+</html>
